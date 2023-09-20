@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="static/site_icon.ico" type="image/x-icon">
+    <title>WB_PRADO :: {% block title %}{% endblock title %}</title>
+</head>
+<body>
+    <header>
+        <h1>WB_PRADO_DASHBOARD</h1>
+        <nav>
+            <a href="/index">Главная</a> | 
+            <a href="/sales_report">Отчёт по реализации</a>
+        </nav>
+    </header>
+    <br>
+
+    {% block content %}{% endblock %}
+    
+</body>
+</html>
