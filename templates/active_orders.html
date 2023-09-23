@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}
+    Активные заказы
+{% endblock title %}
+{% block content %}
+    <table border="1" align="center">
+        <tr>
+            <th>№</th>
+            <th>Номер</th>
+            <th>Артикул</th>
+            <th>Тип доставки</th>
+            <th>Направление</th>
+            <th>Цена закупки</th>
+            <th>Цена продажи</th>
+            <th>Статус продавца</th>
+            <th>Статус покупателя</th>
+        </tr>
+
+        {% for item in data %}
+            <tr>
+                <td>{{ item.counter }}</td>
+                <td>{{ item.number }}</td>
+                <td>{{ item.article }}</td>
+                <td>{{ item.delivery_type }}</td>
+                <td>{{ item.destination }}</td>
+                <td>{{ item.seller_price }}</td>
+                <td>{{ item.client_price }}</td>
+                <td>{{ item.seller_status }}</td>
+                <td>{{ item.client_status }}</td>
+        {% endfor %}
+    </table>
+{% endblock content %}
