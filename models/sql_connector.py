@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta
+from typing import List
 
 from sqlalchemy import MetaData, DateTime, Column, Integer, String, select, insert, delete, update, null, func, asc, \
     desc
@@ -30,6 +31,7 @@ class ProductsDB(Base):
     article = Column(String, nullable=False)
     title = Column(String, nullable=True)
     wb_id = Column(String, nullable=True)
+    sku = Column(String, nullable=True)
     purchase_price = Column(Integer, nullable=True)
     sale_price = Column(Integer, nullable=True)
 
@@ -78,6 +80,13 @@ class BaseDAO:
             await session.commit()
 
     @classmethod
+    async def create_many(cls, data: List[dict]):
+        async with async_session_maker() as session:
+            stmt = insert(cls.model).values(data)
+            await session.execute(stmt)
+            await session.commit()
+
+    @classmethod
     async def delete(cls, **data):
         async with async_session_maker() as session:
             stmt = delete(cls.model).filter_by(**data)
@@ -94,6 +103,14 @@ class ProductsDAO(BaseDAO):
             stmt = update(cls.model).values(**data).filter_by(article=article)
             await session.execute(stmt)
             await session.commit()
+
+    @classmethod
+    async def get_many_by_articles_list(cls, articles: List[str]) -> List[dict]:
+        async with async_session_maker() as session:
+            query = select(cls.model.__table__.columns).where(cls.model.article.in_(articles)).\
+                order_by(cls.model.id.asc())
+            result = await session.execute(query)
+            return result.mappings().all()
 
 
 class OrdersDAO(BaseDAO):
@@ -182,7 +199,7 @@ class OrdersDAO(BaseDAO):
 
 
 async def test():
-    a = await OrdersDAO.get_weekly_report()
+    a = await ProductsDAO.get_many_by_articles_list(articles=["ПС-12", "ПС-9"])
     print(a)
 
 if __name__ == "__main__":

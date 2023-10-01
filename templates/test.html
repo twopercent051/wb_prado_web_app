@@ -1,0 +1,22 @@
+const form = document.getElementById('post_products');
+// Обработчик события отправки формы
+form.addEventListener('submit', function (event) {
+event.preventDefault(); // Предотвратите отправку формы по умолчанию
+
+// Создайте объект для хранения данных из формы
+const formData = {};
+// Получите все элементы формы (input, select, textarea)
+const formElements = form.elements;
+// Пройдитесь по всем элементам формы и добавьте их в объект formData
+for (let i = 0; i < formElements.length; i++) {
+    const element = formElements[i];
+    if (element.name) {
+        formData[element.name] = element.value;
+    }
+}
+// Преобразуйте объект formData в JSON
+const jsonData = JSON.stringify(formData);
+// Теперь у вас есть JSON с данными формы (jsonData)
+console.log(jsonData);
+// Далее вы можете отправить jsonData на сервер или выполнить другие действия
+});

@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}
+    Склад и цены
+{% endblock title %}
+{% block content %}
+
+<form action="/products/" method="get" id="warehouse_id" all>
+    <label for="warehouse_id">Выберите склад:</label>
+    <select name="warehouse_id" id="warehouse_id">
+        <option value="0">--Выберите склад--</option>
+        {% for item in warehouses %}
+            <option value="{{ item.id }}" name="warehouse_id">{{ item.name }}</option>
+        {% endfor %}
+        </select>
+    <input type="submit" value="Выбрать">
+</form>
+
+{% if is_non_default_prices is true %}
+    <h3 align="center">Цены с отклонениями</h3>
+    <form action="/update_prices" method="post" id="update_prices">
+        <table border="0" align="center">
+            <tr>
+                <th>Артикул</th>
+                <th>WB ID</th>
+                <th>Установленная цена</th>
+                <th>Цена на WB</th>
+                <th>---</th>
+            </tr>
+
+            {% for item in non_default_prices %}
+                <tr>
+                    <td>{{ item.article }}</td>
+                    <td>{{ item.wb_id }}</td>
+                    <td>{{ item.sale_price }}</td>
+                    <td>{{ item.real_price }}</td>
+                    <td><input type="checkbox" name="accept" id="accept"></td>
+                </tr>
+            {% endfor %}
+        </table>
+        <input type="submit" value="Сохранить">
+    </form>
+{% endif %}
+
+{% if warehouse_name is not none %}
+    <h3 align="center">Склад {{ warehouse_name }}</h3>
+    <form method="post" action="/update_products" id="update_products">
+        <table border="0" align="center">
+            <tr>
+                <th>№</th>
+                <th>Артикул</th>
+                <th>Наименование</th>
+                <th>WB ID</th>
+                <th>Цена закупки</th>
+                <th>Цена продажи</th>
+                <th>Остаток FBS</th>
+            </tr>
+
+            {% for item in current_products %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.article }}</td>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.wb_id }}</td>
+                    <td><input type="number" name="purchase_price" placeholder="{{ item.purchase_price }}"></td>
+                    <td><input type="number" name="sale_price" placeholder="{{ item.sale_price }}"></td>
+                    <td><input type="number" name="quantity" placeholder="{{ item.quantity }}"></td>
+                </tr>
+            {% endfor %}
+        </table>
+        <input type="submit" value="Сохранить">
+    </form>
+{% endif %}
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedWarehouseId = urlParams.get('warehouse_id');
+    const form = document.getElementById('update_products');
+    console.log(selectedWarehouseId)
+    form.addEventListener('submit', function (event) {
+    event.preventDefault(); // Prevent the form from submitting
+
+    // Create an array to store the product data
+    const productDataArray = [];
+
+    // Get all the table rows except the header row
+    const rows = document.querySelectorAll('table tr:not(:first-child)');
+
+    // Loop through each row
+    rows.forEach(row => {
+        const cells = row.cells;
+
+        // Check if there are enough cells in the row
+        if (cells.length >= 7) { // Assuming you expect at least 7 cells
+            const purchaseInput = cells[4].querySelector('input[name="purchase_price"]');
+            const saleInput = cells[5].querySelector('input[name="sale_price"]');
+            const quantityInput = cells[6].querySelector('input[name="quantity"]');
+
+            // Check if at least one field has a value
+            if (purchaseInput.value.trim() !== '' || saleInput.value.trim() !== '' || quantityInput.value.trim() !== '') {
+                const productData = {
+                    article: cells[1].textContent,
+                    purchase_price: purchaseInput.value,
+                    sale_price: saleInput.value,
+                    quantity: quantityInput.value,
+                    warehouse_id: selectedWarehouseId
+                };
+                productDataArray.push(productData);
+            }
+        }
+    });
+
+    // Check if any data was collected
+    if (productDataArray.length > 0) {
+        // Convert the array to JSON
+        const jsonData = JSON.stringify(productDataArray);
+
+        // Send the JSON data to the backend using Fetch API
+        console.log(jsonData)
+        fetch('/update_products', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: jsonData,
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("Data sent successfully.");
+                form.reset();
+            } else {
+                console.error("Error sending data to the backend.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    } else {
+        // Handle the case where no data was entered
+        console.log("No data entered.");
+    }
+});
+</script>
+
+<script>
+    const non_default_prices_form = document.getElementById('update_prices');
+    non_default_prices_form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const newPricesArray = [];
+        const rows = document.querySelectorAll('table tr:not(:first-child)');
+        rows.forEach(row => {
+            const cells = row.cells;
+            const acceptCheckbox = cells[4].querySelector('input[name="accept"]');
+    
+            // Check if the checkbox is present before trying to access its properties
+            if (acceptCheckbox) {
+                const productData = {
+                    wb_id: cells[1].textContent,
+                    sale_price: cells[2].textContent,
+                    accept: acceptCheckbox.checked,
+                };
+                newPricesArray.push(productData);
+            }
+        });
+        const jsonData = JSON.stringify(newPricesArray);
+        console.log(jsonData);
+        fetch('/update_prices', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: jsonData,
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("Data sent successfully.");
+                non_default_prices_form.reset();
+            } else {
+                console.error("Error sending data to the backend.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    });
+    
+</script>
+
+{% endblock %}

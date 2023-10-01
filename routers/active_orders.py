@@ -1,17 +1,15 @@
-import os
-
-from fastapi import APIRouter, Request
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 
+from create_app import templates
 from models.sql_connector import OrdersDAO
+from routers.auth import SUserAuth, get_current_user
 
 router = APIRouter()
-templates = Jinja2Templates(directory=f"{os.getcwd()}/templates")
 
 
 @router.get("/active_orders", response_class=HTMLResponse)
-async def sales_report_page(request: Request):
+async def sales_report_page(request: Request, user: SUserAuth = Depends(get_current_user)):
     active_orders = await OrdersDAO.get_active()
     data = []
     counter = 1

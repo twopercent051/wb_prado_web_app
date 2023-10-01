@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}
+    Авторизация
+{% endblock title %}
+{% block content %}
+
+    {% if is_start is false %}
+        <div>
+            <p>
+                Вы ввели неверные логин или пароль
+            </p>
+        </div>
+    {% endif %}
+    <form action="auth_action" method="post" id="authForm">
+    <div>
+        <p>
+            <b>Логин: </b>
+            <input type="text" name="login" required>
+        </p>
+    </div>
+    <div>
+        <p>
+            <b>Пароль: </b>
+            <input type="password" name="password" required>
+        </p>
+    </div>
+    <input type="submit" value="Вход" />
+    </form>
+
+{% endblock content %}

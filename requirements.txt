@@ -20,4 +20,8 @@ SQLAlchemy==2.0.21
 starlette==0.27.0
 typing_extensions==4.8.0
 uvicorn==0.23.2
-gunicorn
+PyJWT==2.7.0
+gunicorn==20.1.0
+
+
+aiohttp~=3.8.5

@@ -1,13 +1,12 @@
-import os
-
-from fastapi import APIRouter, Request
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 
+from create_app import templates
+from routers.auth import SUserAuth, get_current_user
+
 router = APIRouter()
-templates = Jinja2Templates(directory=f"{os.getcwd()}/templates")
 
 
 @router.get("/", response_class=HTMLResponse)
-async def index_page(request: Request):
+async def index_page(request: Request, user: SUserAuth = Depends(get_current_user)):
     return templates.TemplateResponse("index.html", {"request": request})
