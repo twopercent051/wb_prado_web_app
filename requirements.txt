@@ -23,6 +23,7 @@ uvicorn==0.23.2
 PyJWT==2.7.0
 gunicorn==20.1.0
 python-jose>=3.0.0
+python-multipart
 
 
 aiohttp~=3.8.5
