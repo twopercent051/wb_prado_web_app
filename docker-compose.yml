@@ -7,6 +7,8 @@ services:
       dockerfile: "Dockerfile.nginx"
     container_name: wb_app_nginx
     restart: always
+    depends_on:
+      - main_app
     ports:
       - "80:80"
       - "443:443"
