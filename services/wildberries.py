@@ -122,12 +122,12 @@ class WildberriesMain(WildberriesAPI):
         feedbacks = await cls._get_request(url=feedbacks_url, data=data)
         questions_data = []
         feedbacks_data = []
-        for question in questions.json()["data"]["questions"]:
+        for question in questions["data"]["questions"]:
             question_dict = dict(id=question["id"],
                                  text=question["text"],
                                  article=question["productDetails"]["supplierArticle"])
             questions_data.append(question_dict)
-        for feedback in feedbacks.json()["data"]["feedbacks"]:
+        for feedback in feedbacks["data"]["feedbacks"]:
             feedback_dict = dict(id=feedback["id"],
                                  text=feedback["text"],
                                  rating=feedback["productValuation"],
