@@ -117,7 +117,7 @@ class WildberriesMain(WildberriesAPI):
         date_from = int((datetime.utcnow() - timedelta(minutes=5)).timestamp())
         questions_url = "https://feedbacks-api.wildberries.ru/api/v1/questions"
         feedbacks_url = "https://feedbacks-api.wildberries.ru/api/v1/feedbacks"
-        data = dict(isAnswered=False, take="5000", skip="0", dateFrom=str(date_from))
+        data = dict(isAnswered="false", take="5000", skip="0", dateFrom=str(date_from))
         questions = await cls._get_request(url=questions_url, data=data)
         feedbacks = await cls._get_request(url=feedbacks_url, data=data)
         questions_data = []
