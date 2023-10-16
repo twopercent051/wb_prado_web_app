@@ -11,19 +11,16 @@ services:
       - "80:80"
       - "443:443"
     links:
-      - wb_app
+      - main_app
 
-  wb_app:
-      image: rb_api
+  main_app:
+      image: "${CONTAINER_NAME:-tg_bot-container}"
       build:
         context: .
-      container_name: rb_api
+      container_name: "${CONTAINER_NAME:-tg_bot-container}"
       restart: always
       env_file:
         - .env
 #      volumes:
 #        - "./certs:/usr/src/certs"
       command: sh -c "gunicorn main:app  --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000"
-#      command: gunicorn main:app
-#      ports:
-#        - "443:8000"

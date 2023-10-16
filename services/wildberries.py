@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timedelta
 from typing import Optional, List
 
 import aiohttp
@@ -98,13 +99,64 @@ class WildberriesMain(WildberriesAPI):
         except Exception as ex:
             print(ex)
 
+    @classmethod
+    async def get_fbs_orders(cls):
+        date_from = str(int((datetime.utcnow() - timedelta(days=2)).timestamp()))
+        url = "https://suppliers-api.wildberries.ru/api/v3/orders"
+        data = dict(limit="100", next="0", dateFrom=str(date_from))
+        return await cls._get_request(url=url, data=data)
+
+    @classmethod
+    async def get_statuses(cls, orders: List[int]):
+        url = "https://suppliers-api.wildberries.ru/api/v3/orders/status"
+        data = dict(orders=orders)
+        return await cls._post_request(url=url, data=data)
+
+    @classmethod
+    async def get_feedbacks_and_questions(cls):
+        date_from = int((datetime.utcnow() - timedelta(minutes=5)).timestamp())
+        questions_url = "https://feedbacks-api.wildberries.ru/api/v1/questions"
+        feedbacks_url = "https://feedbacks-api.wildberries.ru/api/v1/feedbacks"
+        data = dict(isAnswered=False, take="5000", skip="0", dateFrom=str(date_from))
+        questions = await cls._get_request(url=questions_url, data=data)
+        feedbacks = await cls._get_request(url=feedbacks_url, data=data)
+        questions_data = []
+        feedbacks_data = []
+        for question in questions.json()["data"]["questions"]:
+            question_dict = dict(id=question["id"],
+                                 text=question["text"],
+                                 article=question["productDetails"]["supplierArticle"])
+            questions_data.append(question_dict)
+        for feedback in feedbacks.json()["data"]["feedbacks"]:
+            feedback_dict = dict(id=feedback["id"],
+                                 text=feedback["text"],
+                                 rating=feedback["productValuation"],
+                                 article=feedback["productDetails"]["supplierArticle"])
+            feedbacks_data.append(feedback_dict)
+        return dict(questions=questions_data, feedbacks=feedbacks_data)
+
+
+class WildberriesStatistics(WildberriesAPI):
+    token = config.wb.statistic_token
+
+    @classmethod
+    async def get_fbo_sold_orders(cls):
+        date_from = str((datetime.utcnow() - timedelta(days=2)))
+        url = "https://statistics-api.wildberries.ru/api/v1/supplier/sales"
+        data = dict(dateFrom=date_from)
+        return await cls._get_request(url=url, data=data)
+
+    @classmethod
+    async def get_fbo_orders(cls):
+        date_from = str((datetime.utcnow() - timedelta(days=2)))
+        url = "https://statistics-api.wildberries.ru/api/v1/supplier/orders"
+        data = dict(dateFrom=date_from)
+        return await cls._get_request(url=url, data=data)
+
 
 async def main_func():
-    # wb = WildberriesAPI()
-    a = await WildberriesMain.get_prices()
+    a = await WildberriesStatistics.get_fbo_orders()
     print(a)
-    # for i in a["orders"]:
-    #     print(i)
 
 
 if __name__ == "__main__":
