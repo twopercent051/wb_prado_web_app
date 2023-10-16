@@ -153,7 +153,7 @@ class CreateTask:
                         f"💡 {fbo_order['supplierArticle']}",
                         fbo_order["orderType"]
                     ]
-                await send_message(text=text)
+                await send_message(text="\n".join(text))
 
     async def check_sold_fbo_orders(self):
         sold_fbo_orders = await WildberriesStatistics.get_fbo_sold_orders()
