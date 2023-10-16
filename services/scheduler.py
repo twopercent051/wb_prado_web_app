@@ -189,7 +189,7 @@ class CreateTask:
     async def create_task(self):
         scheduler.add_job(func=self.short_tasker,
                           trigger="interval",
-                          seconds=5,
+                          minutes=5,
                           misfire_grace_time=None)
 
 
