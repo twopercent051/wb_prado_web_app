@@ -153,9 +153,16 @@ class WildberriesStatistics(WildberriesAPI):
         data = dict(dateFrom=date_from)
         return await cls._get_request(url=url, data=data)
 
+    @classmethod
+    async def get_warehouse(cls):
+        date_from = str((datetime.utcnow() - timedelta(days=300)))
+        url = "https://statistics-api.wildberries.ru/api/v1/supplier/stocks"
+        data = dict(dateFrom=date_from)
+        return await cls._get_request(url=url, data=data)
+
 
 async def main_func():
-    a = await WildberriesStatistics.get_fbo_orders()
+    a = await WildberriesStatistics.get_warehouse()
     print(a)
 
 

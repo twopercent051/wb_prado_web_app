@@ -199,7 +199,7 @@ class OrdersDAO(BaseDAO):
 
 
 async def test():
-    a = await ProductsDAO.get_many_by_articles_list(articles=["ПС-12", "ПС-9"])
+    a = await OrdersDAO.get_total_report_by_articles()
     print(a)
 
 if __name__ == "__main__":

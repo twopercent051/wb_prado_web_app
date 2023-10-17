@@ -4,7 +4,7 @@ from typing import List
 
 from dateutil.parser import parse
 
-from create_app import scheduler, logger
+from create_app import scheduler
 from models.sql_connector import ProductsDAO, OrdersDAO
 from services.tg_bot import send_message
 from services.wildberries import WildberriesMain, WildberriesStatistics
@@ -56,7 +56,6 @@ class CreateTask:
                     f"<b>Внутренний артикул:</b> <i>{order['article']}</i>",
                     f"<b>Наименование:</b> <i>{product['title']}</i>",
                     f"<b>Цена:</b> <i>{order['convertedPrice'] / 100} ₽</i>",
-                    f"<b>Дата:</b> <i>{create_dtime}</i>",
                     f"<b>Направление:</b> <i>{destination}</i>",
                     f"https://www.wildberries.ru/catalog/{order['nmId']}/detail.aspx"
                 ]
@@ -69,36 +68,42 @@ class CreateTask:
             return
         active_orders = [int(i["order_id"]) for i in orders]
         statuses = await WildberriesMain.get_statuses(orders=active_orders)
-        status_dict = dict(confirm="на сборке 📦",
-                           complete="передан в доставку 🚛",
-                           sorted="отсортирован 🚦",
-                           cancel="отменён продавцом 🤷",
-                           sold="выдан покупателю 🕺",
-                           canceled="отменён 😡",
-                           canceled_by_client="отменён покупателем 😡",
-                           defect="отменён по причине брака 🤬",
-                           ready_for_pickup="готов к выдаче ⚓️")
+        status_dict = dict(confirm="📦 Сборка",
+                           complete="🚛 Доставка",
+                           sorted="🚦 Сортировка",
+                           cancel="🤷 Отмена продавцом",
+                           sold="💰 Выдача",
+                           canceled="😡 Отмена",
+                           canceled_by_client="😡 Отмена покупателем",
+                           defect="🤬 Брак",
+                           ready_for_pickup="⚓️ На ПВЗ")
         for wb_status in statuses["orders"]:
             for order in orders:
                 if str(wb_status["id"]) == str(order["order_id"]):
-                    text = f"Заказ {order['order_id']} от {order['create_dtime']} [{order['article']} " \
-                           f"{order['seller_price']}р / {order['client_price']}р {order['destination']}]"
+                    date = order.strftime("%Y-%m-%d")
+                    text = [
+                        "-" * 5,
+                        f"Заказ от {date} [{order['article']}",
+                        f"Артикул {order['article']}",
+                        f"Цена {order['seller_price']}р / {order['client_price']}р",
+                        order["destination"]
+                    ]
                     if wb_status["supplierStatus"] != order["seller_status"]:
                         await OrdersDAO.update_by_order_id(order_id=str(order["order_id"]),
                                                            seller_status=wb_status["supplierStatus"])
                         if wb_status["supplierStatus"] in ["cancel"]:
                             await OrdersDAO.update_by_order_id(order_id=str(order["order_id"]),
                                                                finish_dtime=datetime.utcnow())
-                        text = f"{text} {status_dict[wb_status['supplierStatus']]}"
-                        await send_message(text=text)
+                        text = [status_dict[wb_status["supplierStatus"]]].extend(text)
+                        await send_message(text="\n".join(text))
                     if wb_status["wbStatus"] != order["client_status"]:
                         await OrdersDAO.update_by_order_id(order_id=str(order["order_id"]),
                                                            client_status=wb_status["wbStatus"])
                         if wb_status["wbStatus"] in ["canceled", "canceled_by_client", "defect", "sold"]:
                             await OrdersDAO.update_by_order_id(order_id=str(order["order_id"]),
                                                                finish_dtime=datetime.utcnow())
-                        text = f"{text} {status_dict[wb_status['wbStatus']]}"
-                        await send_message(text=text)
+                        text = [status_dict[wb_status["supplierStatus"]]].extend(text)
+                        await send_message(text="\n".join(text))
 
     async def check_fbo_orders(self, fbo_orders: List[dict]):
         sql_orders = await OrdersDAO.get_many()
@@ -112,9 +117,16 @@ class CreateTask:
                         await OrdersDAO.update_by_order_id(order_id=order["order_id"],
                                                            client_status="canceled",
                                                            finish_dtime=dtime_now)
-                        text = f"Заказ {order['order_id']} от {order['create_dtime']} [{order['article']} " \
-                               f"{order['seller_price']}р / {order['client_price']}р {order['destination']}] отменён 😡"
-                        await send_message(text=text)
+                        date = order.strftime("%Y-%m-%d")
+                        text = [
+                            "😡 Отмена",
+                            "-" * 5,
+                            f"Заказ от {date} [{order['article']}",
+                            f"Артикул {order['article']}",
+                            f"Цена {order['seller_price']}р / {order['client_price']}р",
+                            order["destination"]
+                        ]
+                        await send_message(text="\n".join(text))
             else:
                 product = await ProductsDAO.get_one_or_none(article=fbo_order["supplierArticle"])
                 if fbo_order["orderType"] == "Клиентский":
@@ -163,9 +175,16 @@ class CreateTask:
                 await OrdersDAO.update_by_order_id(order_id=sql_order["order_id"],
                                                    client_status="sold",
                                                    finish_dtime=self.__parse_dtime(wb_dtime=order["date"]))
-                text = f"Заказ {sql_order['order_id']} от {sql_order['create_dtime']} [{sql_order['article']} " \
-                       f"{sql_order['seller_price']}р / {sql_order['client_price']}р {sql_order['destination']}] " \
-                       f"выдан покупателю 🕺"
+                date = order.strftime("%Y-%m-%d")
+                text = [
+                    "💰 Выдача",
+                    "-" * 5,
+                    f"Заказ от {date} [{order['article']}",
+                    f"Артикул {order['article']}",
+                    f"Цена {order['seller_price']}р / {order['client_price']}р",
+                    order["destination"]
+                ]
+                await send_message(text="\n".join(text))
                 await send_message(text=text)
 
     @staticmethod
