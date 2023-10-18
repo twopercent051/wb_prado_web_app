@@ -1,6 +1,7 @@
 from fastapi.staticfiles import StaticFiles
 
 from create_app import app, scheduler
+from models.redis_connector import RedisConnector
 from routers.index import router as index_router
 from routers.sales_report import router as sales_report_router
 from routers.active_orders import router as active_orders_router
@@ -17,10 +18,12 @@ app.include_router(auth_router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 create_task = CreateTask()
+red = RedisConnector()
 
 
 @app.on_event("startup")
 async def in_startup():
+    red.redis_start()
     scheduler.remove_all_jobs()
     await create_task.create_task()
     scheduler.start()
