@@ -94,16 +94,18 @@ class CreateTask:
                         if wb_status["supplierStatus"] in ["cancel"]:
                             await OrdersDAO.update_by_order_id(order_id=str(order["order_id"]),
                                                                finish_dtime=datetime.utcnow())
-                        text = [status_dict[wb_status["supplierStatus"]]].extend(text)
-                        await send_message(text="\n".join(text))
+                        status = [status_dict[wb_status["supplierStatus"]]]
+                        status.extend(text)
+                        await send_message(text="\n".join(status))
                     if wb_status["wbStatus"] != order["client_status"]:
                         await OrdersDAO.update_by_order_id(order_id=str(order["order_id"]),
                                                            client_status=wb_status["wbStatus"])
                         if wb_status["wbStatus"] in ["canceled", "canceled_by_client", "defect", "sold"]:
                             await OrdersDAO.update_by_order_id(order_id=str(order["order_id"]),
                                                                finish_dtime=datetime.utcnow())
-                        text = [status_dict[wb_status["supplierStatus"]]].extend(text)
-                        await send_message(text="\n".join(text))
+                        status = [status_dict[wb_status["supplierStatus"]]]
+                        status.extend(text)
+                        await send_message(text="\n".join(status))
 
     async def check_fbo_orders(self, fbo_orders: List[dict]):
         sql_orders = await OrdersDAO.get_many()
@@ -201,6 +203,7 @@ class CreateTask:
         events = await WildberriesStatistics.get_warehouse()
         for event in events:
             stock = await StocksDAO.get_one_or_none(article=event["supplierArticle"], warehouse=event["warehouseName"])
+
             if stock:
                 await StocksDAO.update_by_id(item_id=stock["id"],
                                              to_client=event["inWayToClient"],
@@ -230,4 +233,4 @@ class CreateTask:
 
 if __name__ == "__main__":
     a = CreateTask()
-    asyncio.run(a.create_task())
+    asyncio.run(a.check_active_fbs_orders())
