@@ -243,6 +243,7 @@ class CreateTask:
         await self.check_feedbacks_and_questions()
         await self.check_fbo_orders(fbo_orders=fbo_orders)
         await self.check_sold_fbo_orders()
+        await self.get_warehouse()
 
     async def create_task(self):
         scheduler.add_job(func=self.short_tasker,
