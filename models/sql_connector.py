@@ -54,6 +54,17 @@ class OrdersDB(Base):
     warehouse_name = Column(String)
 
 
+class StocksDB(Base):
+    __tablename__ = "stocks"
+
+    id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
+    article = Column(String, nullable=False)
+    warehouse = Column(String, nullable=False)
+    to_client = Column(Integer, nullable=True)
+    from_client = Column(Integer, nullable=True)
+    quantity = Column(Integer, nullable=True)
+
+
 class BaseDAO:
     """Класс взаимодействия с БД"""
     model = None
@@ -90,6 +101,13 @@ class BaseDAO:
     async def delete(cls, **data):
         async with async_session_maker() as session:
             stmt = delete(cls.model).filter_by(**data)
+            await session.execute(stmt)
+            await session.commit()
+
+    @classmethod
+    async def update_by_id(cls, item_id: int, **data):
+        async with async_session_maker() as session:
+            stmt = update(cls.model).values(**data).filter_by(id=item_id)
             await session.execute(stmt)
             await session.commit()
 
@@ -196,6 +214,10 @@ class OrdersDAO(BaseDAO):
                 limit(1)
             result = await session.execute(query)
             return result.mappings().one_or_none()
+
+
+class StocksDAO(BaseDAO):
+    model = StocksDB
 
 
 async def test():

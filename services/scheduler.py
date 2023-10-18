@@ -5,7 +5,7 @@ from typing import List
 from dateutil.parser import parse
 
 from create_app import scheduler
-from models.sql_connector import ProductsDAO, OrdersDAO
+from models.sql_connector import ProductsDAO, OrdersDAO, StocksDAO
 from services.tg_bot import send_message
 from services.wildberries import WildberriesMain, WildberriesStatistics
 
@@ -80,7 +80,7 @@ class CreateTask:
         for wb_status in statuses["orders"]:
             for order in orders:
                 if str(wb_status["id"]) == str(order["order_id"]):
-                    date = order.strftime("%Y-%m-%d")
+                    date = order["create_dtime"].strftime("%Y-%m-%d")
                     text = [
                         "-" * 5,
                         f"Заказ от {date} [{order['article']}",
@@ -196,6 +196,22 @@ class CreateTask:
         for feedback in new_events["feedbacks"]:
             text = f"{'⭐️' * feedback['rating']}\n\nОтзыв на товар {feedback['article']}\n\n<i>{feedback['text']}</i>"
             await send_message(text=text)
+
+    async def get_warehouse(self):
+        events = await WildberriesStatistics.get_warehouse()
+        for event in events:
+            stock = await StocksDAO.get_one_or_none(article=event["supplierArticle"], warehouse=event["warehouseName"])
+            if stock:
+                await StocksDAO.update_by_id(item_id=stock["id"],
+                                             to_client=event["inWayToClient"],
+                                             from_client=event["inWayFromClient"],
+                                             quantity=event["quantity"])
+            else:
+                await StocksDAO.create(article=event["supplierArticle"],
+                                       warehouse=event["warehouseName"],
+                                       to_client=event["inWayToClient"],
+                                       from_client=event["inWayFromClient"],
+                                       quantity=event["quantity"])
 
     async def short_tasker(self):
         fbo_orders = await WildberriesStatistics.get_fbo_orders()
