@@ -21,8 +21,7 @@ services:
         context: .
       container_name: "${CONTAINER_NAME:-tg_bot-container}"
       restart: always
-      ports:
-        - "6379:6379"
+      network_mode: "host"
       env_file:
         - .env
 #      volumes:
