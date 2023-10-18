@@ -104,7 +104,7 @@ class CreateTask:
                         if wb_status["wbStatus"] in ["canceled", "canceled_by_client", "defect", "sold"]:
                             await OrdersDAO.update_by_order_id(order_id=str(order["order_id"]),
                                                                finish_dtime=datetime.utcnow())
-                        status = [status_dict[wb_status["supplierStatus"]]]
+                        status = [status_dict[wb_status["wbStatus"]]]
                         status.extend(text)
                         await send_message(text="\n".join(status))
 

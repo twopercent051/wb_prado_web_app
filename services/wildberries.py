@@ -162,7 +162,7 @@ class WildberriesStatistics(WildberriesAPI):
 
 
 async def main_func():
-    a = await WildberriesStatistics.get_warehouse()
+    a = await WildberriesMain.get_statuses(orders=[1129616398])
     print(a)
 
 
