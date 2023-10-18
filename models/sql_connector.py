@@ -59,6 +59,7 @@ class StocksDB(Base):
 
     id = Column(Integer, nullable=False, autoincrement=True, primary_key=True)
     article = Column(String, nullable=False)
+    barcode = Column(String, nullable=False)
     warehouse = Column(String, nullable=False)
     to_client = Column(Integer, nullable=True)
     from_client = Column(Integer, nullable=True)

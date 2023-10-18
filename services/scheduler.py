@@ -5,6 +5,7 @@ from typing import List
 from dateutil.parser import parse
 
 from create_app import scheduler
+from models.redis_connector import RedisConnector
 from models.sql_connector import ProductsDAO, OrdersDAO, StocksDAO
 from services.tg_bot import send_message
 from services.wildberries import WildberriesMain, WildberriesStatistics
@@ -13,7 +14,7 @@ from services.wildberries import WildberriesMain, WildberriesStatistics
 class CreateTask:
 
     def __init__(self):
-        pass
+        self.red = RedisConnector()
 
     @staticmethod
     def __parse_dtime(wb_dtime: str) -> datetime:
@@ -83,7 +84,7 @@ class CreateTask:
                     date = order["create_dtime"].strftime("%Y-%m-%d")
                     text = [
                         "-" * 5,
-                        f"Заказ от {date} [{order['article']}",
+                        f"Заказ от {date}",
                         f"Артикул {order['article']}",
                         f"Цена {order['seller_price']}р / {order['client_price']}р",
                         order["destination"]
@@ -123,7 +124,7 @@ class CreateTask:
                         text = [
                             "😡 Отмена",
                             "-" * 5,
-                            f"Заказ от {date} [{order['article']}",
+                            f"Заказ от {date}",
                             f"Артикул {order['article']}",
                             f"Цена {order['seller_price']}р / {order['client_price']}р",
                             order["destination"]
@@ -181,7 +182,7 @@ class CreateTask:
                 text = [
                     "💰 Выдача",
                     "-" * 5,
-                    f"Заказ от {date} [{order['article']}",
+                    f"Заказ от {date}",
                     f"Артикул {order['article']}",
                     f"Цена {order['seller_price']}р / {order['client_price']}р",
                     order["destination"]
@@ -201,20 +202,39 @@ class CreateTask:
 
     async def get_warehouse(self):
         events = await WildberriesStatistics.get_warehouse()
+        timestamps = []
+        text = None
+        last_timestamp = self.red.get()
         for event in events:
-            stock = await StocksDAO.get_one_or_none(article=event["supplierArticle"], warehouse=event["warehouseName"])
-
+            event_timestamp = self.__parse_dtime(wb_dtime=event["lastChangeDate"]).timestamp()
+            if event_timestamp < last_timestamp:
+                continue
+            timestamps.append(event_timestamp)
+            stock = await StocksDAO.get_one_or_none(article=event["supplierArticle"],
+                                                    warehouse=event["warehouseName"],
+                                                    barcode=event["barcode"])
             if stock:
+                stock_diff = event["quantity"] - stock["quantity"]
                 await StocksDAO.update_by_id(item_id=stock["id"],
                                              to_client=event["inWayToClient"],
                                              from_client=event["inWayFromClient"],
                                              quantity=event["quantity"])
             else:
+                stock_diff = event["quantity"]
                 await StocksDAO.create(article=event["supplierArticle"],
                                        warehouse=event["warehouseName"],
+                                       barcode=event["barcode"],
                                        to_client=event["inWayToClient"],
                                        from_client=event["inWayFromClient"],
                                        quantity=event["quantity"])
+            if stock_diff > 0:
+                text = f"📦 На склад {event['warehouseName']} поступило {abs(stock_diff)}шт {event['supplierArticle']}"
+            if stock_diff < 0:
+                text = f"📦 Со склада {event['warehouseName']} отправлено {abs(stock_diff)}шт {event['supplierArticle']}"
+            if text:
+                await send_message(text=text)
+        latest_timestamp = max(timestamps)
+        self.red.update(new_timestamp=latest_timestamp)
 
     async def short_tasker(self):
         fbo_orders = await WildberriesStatistics.get_fbo_orders()
@@ -233,4 +253,4 @@ class CreateTask:
 
 if __name__ == "__main__":
     a = CreateTask()
-    asyncio.run(a.check_active_fbs_orders())
+    asyncio.run(a.get_warehouse())

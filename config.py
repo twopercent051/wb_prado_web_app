@@ -18,6 +18,13 @@ class DbConfig:
 
 
 @dataclass
+class RedisConfig:
+    host: str
+    port: int
+    database: int
+
+
+@dataclass
 class AuthConfig:
     login: str
     password: str
@@ -35,6 +42,7 @@ class WBConfig:
 class Config:
     tg_bot: TgBotConfig
     db: DbConfig
+    redis: RedisConfig
     auth: AuthConfig
     wb: WBConfig
 
@@ -53,6 +61,11 @@ def load_config(path: str = None):
             password=env.str('DB_PASS'),
             user=env.str('DB_USER'),
             database=env.str('DB_NAME')
+        ),
+        redis=RedisConfig(
+            host=env.str("REDIS_HOST"),
+            port=env.int("REDIS_PORT"),
+            database=env.int("REDIS_DB")
         ),
         auth=AuthConfig(
             login=env.str("LOGIN"),
