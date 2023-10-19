@@ -81,7 +81,7 @@ class CreateTask:
         for wb_status in statuses["orders"]:
             for order in orders:
                 if str(wb_status["id"]) == str(order["order_id"]):
-                    date = order["create_dtime"].strftime("%Y-%m-%d")
+                    date = order["create_dtime"].strftime("%d-%m-%Y")
                     text = [
                         "-" * 5,
                         f"Заказ от {date}",
@@ -120,7 +120,7 @@ class CreateTask:
                         await OrdersDAO.update_by_order_id(order_id=order["order_id"],
                                                            client_status="canceled",
                                                            finish_dtime=dtime_now)
-                        date = order.strftime("%Y-%m-%d")
+                        date = order["create_dtime"].strftime("%d-%m-%Y")
                         text = [
                             "😡 Отмена",
                             "-" * 5,
@@ -178,7 +178,7 @@ class CreateTask:
                 await OrdersDAO.update_by_order_id(order_id=sql_order["order_id"],
                                                    client_status="sold",
                                                    finish_dtime=self.__parse_dtime(wb_dtime=order["date"]))
-                date = order.strftime("%Y-%m-%d")
+                date = order["create_dtime"].strftime("%d-%m-%Y")
                 text = [
                     "💰 Выдача",
                     "-" * 5,
