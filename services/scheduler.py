@@ -73,7 +73,7 @@ class CreateTask:
                            complete="🚛 Доставка",
                            sorted="🚦 Сортировка",
                            cancel="🤷 Отмена продавцом",
-                           sold="💰 Выдача",
+                           sold="✅ Выдача",
                            canceled="😡 Отмена",
                            canceled_by_client="😡 Отмена покупателем",
                            defect="🤬 Брак",
@@ -180,7 +180,7 @@ class CreateTask:
                                                    finish_dtime=self.__parse_dtime(wb_dtime=order["date"]))
                 date = sql_order["create_dtime"].strftime("%d-%m-%Y")
                 text = [
-                    "💰 Выдача",
+                    "✅ Выдача",
                     "-" * 5,
                     f"Заказ от {date}",
                     f"Артикул {order['article']}",
