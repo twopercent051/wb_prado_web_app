@@ -11,6 +11,8 @@ services:
       dockerfile: "Dockerfile.nginx"
     container_name: wb_app_nginx
     restart: always
+    volumes:
+      - "./static:/var/www/static"
     depends_on:
       - main_app
     ports:
