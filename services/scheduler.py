@@ -183,9 +183,9 @@ class CreateTask:
                     "✅ Выдача",
                     "-" * 5,
                     f"Заказ от {date}",
-                    f"Артикул {order['article']}",
-                    f"Цена {order['seller_price']}р / {order['client_price']}р",
-                    order["destination"]
+                    f"Артикул {order['supplierArticle']}",
+                    f"Цена {sql_order['seller_price']}р / {sql_order['client_price']}р",
+                    sql_order["destination"]
                 ]
                 await send_message(text="\n".join(text))
                 await send_message(text=text)
