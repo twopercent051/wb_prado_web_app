@@ -43,11 +43,11 @@ async def get_and_update_products(warehouse_id: int, sql_products: List[dict]) -
     for wb_product in wb_products:
         if wb_product["vendorCode"] not in sql_products_articles:
             new_wb_products_articles.append(wb_product["vendorCode"])
-    new_wb_products = await WildberriesMain.get_cards_by_art(arts=new_wb_products_articles)
-    for item in new_wb_products:
-        item["purchase_price"] = 0
-        item["sale_price"] = 0
-    if len(new_wb_products) > 0:
+    if len(new_wb_products_articles) > 0:
+        new_wb_products = await WildberriesMain.get_cards_by_art(arts=new_wb_products_articles)
+        for item in new_wb_products:
+            item["purchase_price"] = 0
+            item["sale_price"] = 0
         await ProductsDAO.create_many(new_wb_products)
     all_sql_products = await ProductsDAO.get_many()
     current_wb_articles = [i["vendorCode"] for i in wb_products]

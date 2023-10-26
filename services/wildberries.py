@@ -162,7 +162,7 @@ class WildberriesStatistics(WildberriesAPI):
 
 
 async def main_func():
-    a = await WildberriesStatistics.get_fbo_sold_orders()
+    a = await WildberriesMain.get_cards_by_art(arts=[])
     print(a)
 
 

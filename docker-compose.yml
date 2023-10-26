@@ -12,7 +12,7 @@ services:
     container_name: wb_app_nginx
     restart: always
     volumes:
-      - "./static:/var/www/static"
+      - "/home/twopercent/PycharmProjects/wb_prado_web_app/static:/var/www/static"
     depends_on:
       - main_app
     ports:
