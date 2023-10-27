@@ -17,7 +17,6 @@ services:
       - main_app
     ports:
       - "80:80"
-      - "443:443"
     links:
       - main_app
 
