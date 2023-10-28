@@ -188,7 +188,6 @@ class CreateTask:
                     sql_order["destination"]
                 ]
                 await send_message(text="\n".join(text))
-                await send_message(text=text)
 
     @staticmethod
     async def check_feedbacks_and_questions():
