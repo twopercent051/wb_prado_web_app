@@ -134,7 +134,7 @@ class CreateTask:
                 product = await ProductsDAO.get_one_or_none(article=fbo_order["supplierArticle"])
                 if fbo_order["orderType"] == "Клиентский":
                     client_price = int((fbo_order["totalPrice"] * (100 - fbo_order["discountPercent"])) / 100)
-                    await OrdersDAO.create(order_id=str(fbo_order["odid"]),
+                    await OrdersDAO.create(order_id=str(fbo_order["gNumber"]),
                                            create_dtime=self.__parse_dtime(wb_dtime=fbo_order['date']),
                                            article=fbo_order["supplierArticle"],
                                            seller_price=product["purchase_price"],
@@ -153,7 +153,7 @@ class CreateTask:
                         f"<b>Направление:</b> <i>{fbo_order['regionName']}</i>",
                     ]
                 else:
-                    await OrdersDAO.create(order_id=str(fbo_order["odid"]),
+                    await OrdersDAO.create(order_id=str(fbo_order["gNumber"]),
                                            create_dtime=self.__parse_dtime(wb_dtime=fbo_order['date']),
                                            article=fbo_order["supplierArticle"],
                                            seller_price=0,
