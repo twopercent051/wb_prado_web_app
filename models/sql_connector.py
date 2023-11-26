@@ -112,6 +112,13 @@ class BaseDAO:
             await session.execute(stmt)
             await session.commit()
 
+    @classmethod
+    async def test(cls, **filter_by):
+        async with async_session_maker() as session:
+            query = select(func.count(cls.model.id)).filter_by(**filter_by).limit(1)
+            result = await session.execute(query)
+            return result.mappings().one_or_none()
+
 
 class ProductsDAO(BaseDAO):
     model = ProductsDB

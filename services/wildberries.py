@@ -148,7 +148,7 @@ class WildberriesStatistics(WildberriesAPI):
 
     @classmethod
     async def get_fbo_orders(cls):
-        date_from = str((datetime.utcnow() - timedelta(days=2)))
+        date_from = str((datetime.utcnow() - timedelta(days=5)))
         url = "https://statistics-api.wildberries.ru/api/v1/supplier/orders"
         data = dict(dateFrom=date_from)
         return await cls._get_request(url=url, data=data)
@@ -162,7 +162,9 @@ class WildberriesStatistics(WildberriesAPI):
 
 
 async def main_func():
-    a = await WildberriesMain.get_cards_by_art(arts=[])
+    a = await WildberriesStatistics.get_fbo_orders()
+    # for i in a:
+    #     print(i)
     print(a)
 
 

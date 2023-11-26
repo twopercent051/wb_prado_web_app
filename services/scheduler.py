@@ -37,7 +37,7 @@ class CreateTask:
                 destination = ""
                 for fbo_order in fbo_orders:
                     if fbo_order["srid"] == order["rid"]:
-                        destination = fbo_order["oblast"]
+                        destination = fbo_order["regionName"]
                         break
                 create_dtime = self.__parse_dtime(wb_dtime=order['createdAt'])
                 await OrdersDAO.create(order_id=str(order["id"]),
@@ -144,13 +144,13 @@ class CreateTask:
                                            rid=fbo_order["srid"],
                                            delivery_type="fbo",
                                            warehouse_name=fbo_order["warehouseName"],
-                                           destination=fbo_order["oblast"])
+                                           destination=fbo_order["regionName"])
                     text = [
                         "💡 Заказ по FBO",
                         f"<b>Внутренний артикул:</b> <i>{product['article']}</i>",
                         f"<b>Цена:</b> <i>{client_price} ₽</i>",
                         f"<b>Склад:</b> <i>{fbo_order['warehouseName']}</i>",
-                        f"<b>Направление:</b> <i>{fbo_order['oblast']}</i>",
+                        f"<b>Направление:</b> <i>{fbo_order['regionName']}</i>",
                     ]
                 else:
                     await OrdersDAO.create(order_id=str(fbo_order["odid"]),
@@ -163,7 +163,7 @@ class CreateTask:
                                            rid=fbo_order["srid"],
                                            delivery_type="fbo",
                                            warehouse_name=fbo_order["warehouseName"],
-                                           destination=fbo_order["oblast"])
+                                           destination=fbo_order["regionName"])
                     text = [
                         f"💡 {fbo_order['supplierArticle']}",
                         fbo_order["orderType"]
