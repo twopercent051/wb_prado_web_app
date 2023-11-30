@@ -133,7 +133,7 @@ class CreateTask:
             else:
                 product = await ProductsDAO.get_one_or_none(article=fbo_order["supplierArticle"])
                 if fbo_order["orderType"] == "Клиентский":
-                    client_price = int((fbo_order["totalPrice"] * (100 - fbo_order["discountPercent"])) / 100)
+                    client_price = int(fbo_order["priceWithDisc"] / 100)
                     await OrdersDAO.create(order_id=str(fbo_order["gNumber"]),
                                            create_dtime=self.__parse_dtime(wb_dtime=fbo_order['date']),
                                            article=fbo_order["supplierArticle"],
